@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, FC, ReactNode } from "react";
+import Image from "next/image";
 import { gsap } from "gsap";
 
 interface GridMotionProps {
@@ -14,7 +15,7 @@ const GridMotion: FC<GridMotionProps> = ({
 }) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const mouseXRef = useRef<number>(window.innerWidth / 2);
+  const mouseXRef = useRef<number>(0);
 
   const totalItems = 28;
   const defaultItems = Array.from(
@@ -25,6 +26,9 @@ const GridMotion: FC<GridMotionProps> = ({
     items.length > 0 ? items.slice(0, totalItems) : defaultItems;
 
   useEffect(() => {
+    // Initialize mouse position safely on client
+    mouseXRef.current = typeof window !== "undefined" ? window.innerWidth / 2 : 0;
+
     gsap.ticker.lagSmoothing(0);
 
     const handleMouseMove = (e: MouseEvent): void => {
@@ -95,10 +99,16 @@ const GridMotion: FC<GridMotionProps> = ({
                   <div key={itemIndex} className="relative">
                     <div className="relative w-full h-full overflow-hidden rounded-[10px] bg-[#111] flex items-center justify-center text-white text-[1.5rem]">
                       {isImageString ? (
-                        <div
-                          className="w-full h-full bg-cover bg-center absolute top-0 left-0"
-                          style={{ backgroundImage: `url(${content})` }}
-                        ></div>
+                        <Image
+                          src={content as string}
+                          alt=""
+                          fill
+                          sizes="25vw"
+                          quality={60}
+                          loading="lazy"
+                          className="object-cover"
+                          draggable={false}
+                        />
                       ) : (
                         <div className="p-4 text-center z-[1]">{content}</div>
                       )}
